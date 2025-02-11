@@ -1,14 +1,25 @@
 // require('dotenv').config({path: "./env"})
-import dotenv from "dotenv"
-import { connectDB } from "./db/index.js"
+import dotenv from "dotenv" 
+import { connectDB } from "./db/index.js" //imported connectDB function connecting DB in the starting of (entry point - i.e index.js) of code.
+import { app } from "./app.js"; //import app to use app.
 
-dotenv.config("./env");
+dotenv.config("./env"); //dotenv ko config kiya. aur package.json me kuch scrits bhi add krni padi.
 
-connectDB();
+//after database is connected. then listen the event at port.
+connectDB() //connectDB is a async function so it will return a promise which can later .then & .catch
+.then(() => {
+    app.listen(process.env.PORT || 8000, ()=> {
+        console.log(`server is running at Port: ${process.env.PORT}`)
+    })
+})
+.catch((error)=> {
+    console.log("Mongo connection failed", error)
+}
+)
 
 
 
-
+ 
 
 
 
