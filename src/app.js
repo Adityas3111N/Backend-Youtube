@@ -2,6 +2,9 @@ import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
 
+ // Birth of the ultimate powerful app.
+const app = express();
+
 //When an error is emitted by the app, the error details are logged to the console
 //  with console.log("error", error).
 app.on("error", (error) => {  
@@ -13,7 +16,6 @@ app.on("error", (error) => {
 //  This is often done to make sure the application stops running if a critical 
 // issue occurs (instead of silently failing).
 
-const app = express(); // Birth of the ultimate powerful app.
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true
