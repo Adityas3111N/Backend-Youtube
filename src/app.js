@@ -26,5 +26,14 @@ app.use(cors({
 // credentials: true: It also allows these websites to bring cookies or tokens with them, like IDs for who they are.
 // So basically, it’s just saying, “Hey backend, let this website in and talk to you safely.”
 
+app.use(express.json({limit: "16kb"}))
+app.use(express.urlencoded({extended: true, limit: "16kb"}))
+app.use(express.static("public"))
+app.use(cookieParser())
+ 
+
+//routes import
+//by importing here we are seggregrating the code in sections.
+import userRouter from "./routes/user.routes.js"
 
 export {app}  //have to export powerful app to use express in different files.
