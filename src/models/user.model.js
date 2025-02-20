@@ -63,7 +63,7 @@ const userSchema = new Schema(
 userSchema.pre("save", async function(next){
 
     if(!this.isModified("password")) return next();//this will check if password is not modified it will return next  -> middleware is done.
-    this.password = bcrypt.hash(this.password, 10); //hash(encrypt) password 10 times for higher security encryption.
+    this.password = await bcrypt.hash(this.password, 10); //hash(encrypt) password 10 times for higher security encryption.
     next(); //next to tell that this middleware is done.
 })
 

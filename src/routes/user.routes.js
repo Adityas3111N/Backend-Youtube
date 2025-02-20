@@ -1,8 +1,20 @@
 import {Router} from "express"
 import { registerUser } from "../controllers/user.controller.js";
+import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router();
-router.route("/register").post(registerUser) 
+router.route("/register").post(
+    upload.fields([
+        {
+            name: "avatar",
+            maxCount: 1
+        },
+        {
+            name: "CoverImage",
+            maxCount: 1
+        }
+    ]),
+    registerUser) 
 //ye route "/register" path pe jate hi hame registerUser controller pe le jata hai.
 //  ab us controller me jo bhi likha hoga vo ho jaega.
 
