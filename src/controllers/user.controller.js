@@ -1,6 +1,7 @@
-import { asyncHandler } from "../utils/asyncHandler"; // we have created a utility
+import { asyncHandler } from "../utils/asyncHandler.js"; // we have created a utility
 //that take a function as a parameter and wrapped in try catch so no tension of handling error etc.
 
+//const registerUser = asyncHandler(fn)
 const registerUser = asyncHandler(
    async (req, res) => {
     res.status(200).json({

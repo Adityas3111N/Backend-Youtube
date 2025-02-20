@@ -8,7 +8,7 @@ dotenv.config("./env"); //dotenv ko config kiya. aur package.json me kuch scrits
 //after database is connected. then listen the event at port.
 connectDB() //connectDB is a async function so it will return a promise which can later .then & .catch
 .then(() => {
-    app.listen(process.env.PORT || 8000, ()=> {
+    app.listen(process.env.PORT || 8000, "0.0.0.0", ()=> {
         console.log(`server is running at Port: ${process.env.PORT}`)
     })
 })
