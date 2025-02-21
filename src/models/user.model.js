@@ -5,7 +5,11 @@ import jwt from "jsonwebtoken" //had a bug that initially i installed these depe
 
 const userSchema = new Schema(
     {
-        username: {
+        //here i used error.code so had to change that. and was also getting error
+        //  bcz changed in schema to all camel casing. anf that again created new 
+        // indexes. so have to delete old one to get rid from error code 11000. i 
+        // think mongo itself make indexes as for email it made email_1 and so on.
+        userName: {
             type: String,
             required: true,
             lowercase: true,
@@ -20,7 +24,7 @@ const userSchema = new Schema(
             unique: true,
             trim: true,
         },
-        fullname: {
+        fullName: {
             type: String, 
             required: true,
             trim: true,
@@ -30,7 +34,7 @@ const userSchema = new Schema(
             type: String, //cloudinary url
             required: true
         },
-        coverimage: {
+        coverImage: {
             type: String //cloudinary url
         },
         watchHistory: [
@@ -82,8 +86,8 @@ userSchema.methods.generateAccessTocken = function(){
         {
         _id: this._id,
         email: this.email,
-        username: this.username,
-        fullname: this.fullname    
+        userName: this.userName,
+        fullName: this.fullName    
         },
          process.env.ACCESS_TOCKEN_SECRET,
         {

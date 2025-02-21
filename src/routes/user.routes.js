@@ -6,11 +6,11 @@ const router = Router();
 router.route("/register").post(
     upload.fields([
         {
-            name: "avatar",
+            name: "avatar",   
             maxCount: 1
         },
         {
-            name: "CoverImage",
+            name: "coverImage", // in postman i just used smallcase 'c' instead of this and it threw error "unexpected field." i.e- they don't know what i am uploading.
             maxCount: 1
         }
     ]),

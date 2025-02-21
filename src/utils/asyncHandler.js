@@ -13,19 +13,21 @@
 
 
 
-const asyncHandler = (fn) => async(req, res, next) => {
+const asyncHandler = (fn) => async (req, res, next) => {
     try {
         await fn(req, res, next);
     } catch (error) {
-        res.status(error.code || 500).json({
+        console.error("Error in asyncHandler:", error);
+        res.status(Number(error.statusCode) || 500).json({  //here i used error.code so had to change that. and was also getting error bcz changed in schema to all camel casing. and that again created new indexes. so have to delete old one to get rid from error code 11000. 
             success: false,
-            message: error.message
-        })
+            message: error.message || "Internal Server Error"
+        });
+
     }
 }
 
-export {asyncHandler}
+export { asyncHandler }
 
 
-// this wrapper will ease our life alot. we will need this so much and each time 
+// this wrapper will ease our life alot. we will need this so much and each time
 // this will save this much line of cluttery code.
