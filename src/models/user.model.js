@@ -52,6 +52,10 @@ const userSchema = new Schema(
        //  authenticate user bcz we can't compare with encrypted password.
        refreshToken: {
         type: String
+       },
+       
+       accessToken: {
+        type: String
        }
     },
     
