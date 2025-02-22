@@ -50,7 +50,7 @@ const userSchema = new Schema(
         required: [true, 'password is required']
        }, //we will encrypt and store password in db and later we don't know how to
        //  authenticate user bcz we can't compare with encrypted password.
-       refreshTockens: {
+       refreshToken: {
         type: String
        }
     },
@@ -80,30 +80,30 @@ userSchema.methods.isPasswordCorrect = async function(password){
 // on the basis of wheather password matched or not.
 //password aur abhi user ke dwara enter kiye hue password ko compare karta hai.
 
-// Json web Tocken(JWT)
-userSchema.methods.generateAccessTocken = function(){
-    return jwt.sign(  //jwt.sign ke ander payloads aur secret aur expiry dalte hai to vo tocken generate kr deta hai.
+// Json web Token(JWT)
+userSchema.methods.generateAccessToken = function(){
+    return jwt.sign(  //jwt.sign ke ander payloads aur secret aur expiry dalte hai to vo Token generate kr deta hai.
         {
         _id: this._id,
         email: this.email,
         userName: this.userName,
         fullName: this.fullName    
         },
-         process.env.ACCESS_TOCKEN_SECRET,
+         process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresIn: process.env.ACCESS_TOCKEN_EXPIRY
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
         }
     )
 }
 
-userSchema.methods.generateAccessTocken = function(){
-    return jwt.sign(  //jwt.sign ke ander payloads aur secret aur expiry dalte hai to vo tocken generate kr deta hai.
-        {//refresh tockens generate krne ke liye payload me keval id ki jarurat hoti hai.
+userSchema.methods.generateRefreshToken = function(){
+    return jwt.sign(  //jwt.sign ke ander payloads aur secret aur expiry dalte hai to vo Token generate kr deta hai.
+        {//refresh Tokens generate krne ke liye payload me keval id ki jarurat hoti hai.
         _id: this._id,
         },
-         process.env.REFRESH_TOCKEN_SECRET,
+         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn: process.env.REFRESH_TOCKEN_EXPIRY
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
     )
 }

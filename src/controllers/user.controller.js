@@ -7,6 +7,28 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 
 
 
+
+
+//we always need to generate access Token and refresh Tokens so instead i made a method for doing this.
+
+const generateAccessAndRefreshTokens = async (userId) => {//just enter userId and both will be generated.
+
+    try {
+
+    const user = await User.findById(userId)
+    const accessToken = user.generateAccessToken()
+    const refreshToken = user.generateRefreshToken() //Tokens are generated and stored.
+
+    user.refreshToken = refreshToken
+    await user.save({validateBeforeSave: false}) //save the changes before validating password etc.
+
+    return {accessToken, refreshToken}
+
+    } catch (error) {
+        throw new ApiError(500, "something went wrong while generating access Token and refresh Tokens.")
+    }
+}
+
 //const registerUser = asyncHandler(fn)
 const registerUser = asyncHandler(
     //step 1 - get user details from frontend.
@@ -60,8 +82,8 @@ const registerUser = asyncHandler(
         userName: userName.toLowerCase()
     })
 
-    //step 6 - check if user is creeated and if created then remove password and refreshTocken fileds.
-    const createdUser = await User.findById(newUser._id).select("-password -refreshTocken")
+    //step 6 - check if user is creeated and if created then remove password and refreshToken fileds.
+    const createdUser = await User.findById(newUser._id).select("-password -refreshToken")
     if(!createdUser){
         throw new ApiError(500, "Couldn't upload the images. try again later.")
     }
@@ -73,4 +95,87 @@ const registerUser = asyncHandler(
     }) //ab ye method to hamne bana diya ab ye method run kab hoga. to koi url agar hit
 //  hoga to run hoga. to iske liye hm routes banate hai. 
 
-export {registerUser} //exported registerUser object.
+const loginUser = asyncHandler(
+    async (req, res) => {
+        //step 1 - get data from frontend(formdata).
+        const {email, userName, password} = req.body
+
+        if(!(userName || email)){
+            throw new ApiError(400, "username or email is required.")
+        }
+
+        //step 2 - check if user exist or not.(if any of email or username is found.)
+        const user = await User.findOne({ //y method mongoDb ke mongoose ki wjh se available h.
+            $or: [{email}, {userName}]
+        })
+
+        if(!user){
+            throw new ApiError(404, "user doesn't exist")
+        }
+
+        //step 3 - check password. in userSchema we have used bcrypt to compare encrypted password. isPasswordCorrect function.
+       const isPasswordvalid =  await user.isPasswordCorrect(password) //this is not mongoode User. this is our user which we got from response of findOne.
+       
+       if(!isPasswordvalid){
+        throw new ApiError(401, "Invalid user credentials")
+    }
+
+    //step 4 - generate access and refresh Tokens.
+    const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id); //destructure and store both values in variables.
+
+    //here either update the user object or make another call to db if that doesn't seem expensive.
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+
+    //step 5 - send cookies & send response that user logged in.
+    const options = { //by default cookies can be modified by anyone. but doing these two now itsonly modifiable from server. altrough frontend can see it.
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+    .status(200)
+    .cookie("accessTocken", accessToken, options)
+    .cookie("refreshTocken", refreshTocken, options)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                user: loggedInUser, accessToken, refreshToken
+            },
+            "user logged in successfully"
+        )
+    )
+    }
+)
+
+const logoutUser = asyncHandler(
+   async (req, res) => {
+   await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {refreshToken: undefined}
+        },
+        {
+            new: true //response me new updated value milegi.
+        },
+    )
+
+    const options = { //by default cookies can be modified by anyone. but doing these two now itsonly modifiable from server. altrough frontend can see it.
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(
+        new ApiResponse (200, {}, "user logged out successfully.")
+    )
+    }
+)
+export {
+    registerUser,
+    loginUser,
+    logoutUser
+   } //exported registerUser object.
