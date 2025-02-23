@@ -1,5 +1,5 @@
 import {Router} from "express"
-import { loginUser, logoutUser, registerUser, refreshAccessToken } from "../controllers/user.controller.js";
+import { loginUser, logoutUser, registerUser, refreshAccessToken, changeCurrentPassword } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router();
@@ -20,7 +20,7 @@ router.route("/register").post(
 
     //secure routes - login is necessary
     router.route("/logout").post(verifyJWT, logoutUser)
-    router.route("/refresh-token").post(refreshAccessToken)  //made endpoint for refreshing access token.
+    router.route("/refresh-token").post(refreshAccessToken) //made endpoint for refreshing access token.
 //ye route "/register" path pe jate hi hame registerUser controller pe le jata hai.
 //  ab us controller me jo bhi likha hoga vo ho jaega.
 
