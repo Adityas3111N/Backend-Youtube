@@ -2,10 +2,11 @@ import { asyncHandler } from "../utils/asyncHandler.js"; // we have created a ut
 //that take a function as a parameter and wrapped in try catch so no tension of handling error etc.
 import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.model.js" //tis can have direct contact with db. as it  is created by mongoose.
-import {uploadOnCloudinary} from "../utils/cloudinary.js"
+import {deleteFromCloudinary, uploadOnCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
 import { json } from "express";
+import { Subscription } from "../models/subscription.model.js";
 
 
 
@@ -236,7 +237,10 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .json(
-        new ApiResponse(200, {}, "User has successfully changed password")
+        new ApiResponse(
+            200,
+            {},
+            "User has successfully changed password")
     )
 
 })
@@ -255,7 +259,7 @@ const getCurrentUser = asyncHandler(
 const updateAccountDetails = asyncHandler(async (req, res) => {
     const {fullName, email} = req.body
 
-    const user = User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user._id,   //verify jwt before this. so req have access to user object.
         {
             $set: {
@@ -276,7 +280,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path //multer ne avatar ko local pe upload kiya. ye usi ka path hai.
-
+    const fileToBeDeletedFromCloudinary = user.avatar
     if(!avatarLocalPath){
         throw new ApiError(400, "avatar file is missing")
     }
@@ -296,17 +300,21 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         {new: true}
     ).select("-password")
 
+    const response = await deleteFromCloudinary(fileToBeDeletedFromCloudinary);
+
     return res
     .status(200)
     .json(
         new ApiResponse(200,
-            user,
-            "avatar updated successfully."
+            {user, response},
+            "avatar updated successfully & old avatar deleted successfully."
         )
     )
 })
 const updateUserCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalPath = req.file?.path //multer ne avatar ko local pe upload kiya. ye usi ka path hai.
+    const fileToBeDeletedFromCloudinary = user.coverImage
+
 
     if(!coverImageLocalPath){
         throw new ApiError(400, "coverImage file is missing")
@@ -327,12 +335,95 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
         {new: true}
     ).select("-password")
 
+    const response = await deleteFromCloudinary(fileToBeDeletedFromCloudinary);
+
+
     return res
     .status(200)
     .json(
         new ApiResponse(200,
-            user,
-            "coverImage updated successfully."
+           {user, response},
+            "coverImage updated successfully & old coverImage deleted successfully from cloudinary."
+        )
+    )
+})
+
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+    const {userName} = req.params
+
+    if(!userName?.trim()){
+        throw new ApiError(400, "username is missing")
+    }
+
+    //now you have 2 options either use User.find({userName}) then apply aggregation pipeline on its _id.
+    //or second option use $match from aggregation features.
+
+    const channel = await User.aggregate([ //output jo channel me store hoga vo array hoga.
+        {
+            $match: {//stage 1 - ab hamare pas keval ek document hai jiske pas vo username hai jo ki frontend ko chahiye.
+                userName: userName?.toLowerCase()
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions", //mongo me sare feilds lowercase aur plural ho jati h.
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers" //it will return all documents which subscribes _id.
+            },
+        },
+        {
+            $lookup: {
+                from: "subscriptions", //mongo me sare feilds lowercase aur plural ho jati h.
+                localField: "_id",
+                foreignField: "subscriber",  //check in each document in subscriptions it will look for subscriber feild with _id value.
+                as: "subscriberedTo" //it will return all documents which is subscribed by _id.
+            }
+        }, 
+        {
+            $addFields: {//add additional fields.
+                subscribersCount: {
+                    $size: "$subscribers"
+                },
+                channelSubscribedToCount: {
+                    $size: "$subscriberedTo"
+                },
+
+                isSubscribed: {
+                   $cond: {
+                    if: {$in: [req.user?._id, "$subscribers.subscriber"]}, //check if _id of user is in subscribers.subscriber or not.
+                    then: true,
+                    else: false
+                   }
+                }
+            }
+        },
+        {
+            $project: {
+                fullName: 1,
+                userName: 1,
+                email: 1,
+                coverImage: 1,
+                avvatar: 1,
+                subscribersCount: 1,
+                isSubscribed: 1,
+                channelSubscribedToCount:1,
+                createdAt: 1,
+            }
+        }
+    ])
+
+    if(!channel?.length){
+        throw new ApiError(404, "channel does not exist.")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            channel[0],
+            "user channel fetched successfully"
         )
     )
 })
@@ -345,5 +436,6 @@ export {
     getCurrentUser,
     updateAccountDetails,
     updateUserCoverImage,
-    updateUserAvatar
+    updateUserAvatar,
+    getUserChannelProfile
    } //exported registerUser object.

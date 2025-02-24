@@ -1,6 +1,8 @@
 import { v2 as cloudinary } from 'cloudinary';
 import exp from 'constants';
 import fs from "fs"; //this is by default provided by node js. file system helps tto manage files. we are using to unlink from server once uploaded on cloudinary.
+import { ApiError } from './ApiError';
+import { ApiResponse } from './ApiResponse';
 
 cloudinary.config({ 
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
@@ -31,5 +33,29 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 }
 
+const deleteFromCloudinary = async(localFilePath) => {
+    try {
+        if(!localFilePath){
+            throw new ApiError(400, "no old file to delete from cloudinary")
+        }
 
-export {uploadOnCloudinary};
+        const response = await cloudinary.uploader.destroy(localFilePath)
+        return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                response,
+                "old file deleted successfully from cloudinary after updating new file"
+            )
+        )
+    } catch (error) {
+        throw new ApiError(401, "something went wrong while deleting old file from cloudinary after updating")
+    }
+}
+
+
+export {
+    uploadOnCloudinary,
+    deleteFromCloudinary
+};
