@@ -5,6 +5,7 @@ import {User} from "../models/user.model.js" //tis can have direct contact with 
 import {deleteFromCloudinary, uploadOnCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 import { json } from "express";
 import { Subscription } from "../models/subscription.model.js";
 
