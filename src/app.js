@@ -3,18 +3,21 @@ import cors from "cors"
 import cookieParser from "cookie-parser"
 
  // Birth of the ultimate powerful app.
+ //This creates an instance of the Express app — your backend’s heart. 
+ // It’s like a command center that listens for incoming requests and sends 
+ // responses.
 const app = express();
 
 //When an error is emitted by the app, the error details are logged to the console
-//  with console.log("error", error).
+//with console.log("error", error).
 app.on("error", (error) => {  
     console.log("error", error);
     throw error;
 })
 
 //After logging the error, the code rethrows the error using throw error;.
-//  This is often done to make sure the application stops running if a critical 
-// issue occurs (instead of silently failing).
+//This is often done to make sure the application stops running if a critical 
+//issue occurs (instead of silently failing).
 
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
@@ -36,6 +39,8 @@ app.use(cookieParser()) //middlewares
 //by importing here we are seggregrating the code in sections.
 import userRouter from "./routes/user.routes.js"
 
-app.use("/api/v1/users", userRouter) 
+app.use("/api/v1/users", userRouter)  //app.use ka use middlewares ke liye hota h.
+//it means jaise hi path "/api/v1/users" ho, ap userRouter me chale jao aage ka 
+// rasta wha se pta chalega. similarily we will make for videoRouter, etc.
 
 export {app}  //have to export powerful app to use express in different files.
