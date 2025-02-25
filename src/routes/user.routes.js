@@ -45,6 +45,9 @@ router.route("/change-password").post(verifyJWT, changeCurrentPassword)
 router.route("/current-user").get(verifyJWT, getCurrentUser)
 router.route("/update-account").patch(verifyJWT, updateAccountDetails)
 
+//note - hamesa postman se jb check kro file upload to multer(here upload)
+//me jo naam dala ho use key rkhna hoga. aur frontend se bhi dilwao to usi naam se.
+
 router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar) //post me sari details update ho jaengi isliye patch use kiya.
 router.route("/cover-image").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage) //upload.single isliye kyuki multer ka use krke update krne ke liye file keval ek bar upload krne ki permission denge.
 

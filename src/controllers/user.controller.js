@@ -178,7 +178,12 @@ const logoutUser = asyncHandler(
 )
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
+    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;  
+    //when frontend sees a 401, it automatically calls refresh endpoint.
+    //refresh token will be stored in form cookies in browser so easily accessed by req.cookies.
+    //then we have cookie-parser.
+    // "/refresh-token" by "axios.post('api/v1/auth/refresh-token', {}, { withCredentials: true });"
+
     if(!incomingRefreshToken){
         throw new ApiError(401, "unauthorized request");
     }
@@ -186,10 +191,13 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
    try {//just for safty try catch.
      const decodedToken = jwt.verify(
          incomingRefreshToken,
-         process.env.REFRESH_TOKEN_SECRET  // i used just id as payload to make refreshToken. so in dec odedToken i would have that. and i can compare that with id of user in our db.
+         process.env.REFRESH_TOKEN_SECRET  // i used just id as payload to make refreshToken. so in decodedToken i would have that. and i can compare that with id of user in our db.
      )
+
+     console.log(decodedToken);
  
      const user = await User.findById(decodedToken?._id);
+     console.log(user);
      if(!user){
          throw new ApiError(401, "invalid refresh token")
      }
@@ -204,7 +212,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
          httpOnly: true,
          secure: true
      }
-     const{accessToken, newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
+     const{accessToken, newRefreshToken} = await generateAccessAndRefreshTokens(user._id) 
      return res
      .status(200)
      .cookie("accessToken", accessToken, options)
@@ -268,19 +276,29 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
             }
         },
         {new: true} //in user you will get updated user.
-    ).select("-password")
+    ).select("-password -refreshToken")
 
     return res
     .status(200)
-    .json(200,
-        user,
-        "Account details updated successfully"
+    .json(
+        new ApiResponse(200,
+            user, 
+            "User account details updated successfully"
+        )
     )
 })
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path //multer ne avatar ko local pe upload kiya. ye usi ka path hai.
-    const fileToBeDeletedFromCloudinary = user.avatar
+    const avatarUrl = req.user?.avatar;
+    const fileName = avatarUrl.substring(avatarUrl.lastIndexOf("/")+1); 
+    //"avatarUrl.lastIndexOf("/")+1 -> this means last index of slash + 1"
+    //i.e - if 61 is last index of "/". then 62
+    //and fileName will store whole substring from 62 to end.
+
+    const public_id = fileName.split(".")[0];//cloudinary need public_id (last part of url) to delete any cloudinary file.
+    //this will split in parts at every dot. and public will store first part.
+
     if(!avatarLocalPath){
         throw new ApiError(400, "avatar file is missing")
     }
@@ -291,16 +309,16 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         throw new ApiError(400, "error while uploading avatar")
     }
 
-    const user = User.findByIdAndUpdate(req.user?._id,
+    const user = await User.findByIdAndUpdate(req.user?._id,
         {
             $set: {
                 avatar: avatar.url
             }
         },
         {new: true}
-    ).select("-password")
+    ).select("-password -refreshToken")
 
-    const response = await deleteFromCloudinary(fileToBeDeletedFromCloudinary);
+    const response = await deleteFromCloudinary(public_id);
 
     return res
     .status(200)
@@ -313,7 +331,10 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 })
 const updateUserCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalPath = req.file?.path //multer ne avatar ko local pe upload kiya. ye usi ka path hai.
-    const fileToBeDeletedFromCloudinary = user.coverImage
+    const coverImageUrl = req.user?.coverImage;
+
+    const fileName = coverImageUrl.substring(coverImageUrl.lastIndexOf("/")+1)
+    const public_id = fileName.split(".")[0];
 
 
     if(!coverImageLocalPath){
@@ -326,16 +347,16 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
         throw new ApiError(400, "error while uploading coverImage")
     }
 
-    const user = User.findByIdAndUpdate(req.user?._id,
+    const user = await User.findByIdAndUpdate(req.user?._id,
         {
             $set: {
                 coverImage: coverImage.url
             }
         },
         {new: true}
-    ).select("-password")
+    ).select("-password -refreshToken")
 
-    const response = await deleteFromCloudinary(fileToBeDeletedFromCloudinary);
+    const response = await deleteFromCloudinary(public_id);
 
 
     return res
