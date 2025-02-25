@@ -370,9 +370,13 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 })
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
-    const {userName} = req.params
+    const {username} = req.params  //bcz param key is username not userName. in url we generally use smallcase for clarity.
+    //this was a bug i was trying to use "userName" and this threw error. bcz param is giving 
+    //{ username: 'eleven' }
 
-    if(!userName?.trim()){
+
+    //note - param se lete hue hamesa jo param me define hoga usi naam se data lenge.
+    if(!username?.trim()){
         throw new ApiError(400, "username is missing")
     }
 
@@ -382,7 +386,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     const channel = await User.aggregate([ //output jo channel me store hoga vo array hoga.
         {
             $match: {//stage 1 - ab hamare pas keval ek document hai jiske pas vo username hai jo ki frontend ko chahiye.
-                userName: userName?.toLowerCase()
+                userName: username?.toLowerCase() 
             }
         },
         {
