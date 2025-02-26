@@ -43,8 +43,8 @@ const registerUser = asyncHandler(
         throw new ApiError(400, "All fields are required")
     }
 
-    const existedUser = await User.findOne({
-        $or: [{userName}, {email}]
+    const existedUser = await User.findOne({ //check kiya ki is email ya username se koi user hai ya nahi.
+        $or: [{userName}, {email}] //or operator from mongoose. so check in mongodb.
     })
     if(existedUser){
         throw new ApiError(409, "User with same email or username already exist")
@@ -56,7 +56,8 @@ const registerUser = asyncHandler(
     // console.log("CoverImage file:", req.files?.coverImage); 
     //just checking is everything fine.
 
-    const avatarLocalPath = req?.files?.avatar[0]?.path;
+    const avatarLocalPath = req?.files?.avatar[0].path; //kai bar dusri file postman me dal ke check kr leni chahiye(register me phle se jo file thi bs user name aur email change kr ke). abhi aisa hus mai aadhe ghante se paresan tha nya user register nhi ho rha tha.
+    //koi bhi file upload krte hai jb multer se to us file ke naam ko ek array return krta hai jisme at 0th index ek object hota hai jo ki uska path aur other fields store krta hai.
     // const coverImageLocalPath = req?.files?.coverImage[0]?.path;
     //this was throwing error in case when there was no cover image given by user. becz if you don't have an array coverImage coming, how can you access coverImage[0].
     let coverImageLocalPath;
@@ -77,7 +78,7 @@ const registerUser = asyncHandler(
 
     //step 5 - create user object and create it's entry in db.
     const newUser = await User.create({
-        fullName,
+        fullName, //in js  fullName: fullName can be written like this.
         avatar: avatar.url,
         coverImage: coverImage?.url,
         email,

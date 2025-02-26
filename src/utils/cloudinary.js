@@ -9,7 +9,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_CLOUD_SECRET 
 });
 
-const uploadOnCloudinary = async (localFilePath) => {
+const uploadOnCloudinary = async (localFilePath) => { //upload krne ke liye keval localFile Path chahiye.
     try {
         if(!localFilePath){
             console.error("cloudinary.js :: no local file path given", error);
@@ -32,7 +32,7 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 }
 
-const deleteFromCloudinary = async(localFilePath) => {
+const deleteFromCloudinary = async(localFilePath) => {//delete krne ke liye kevl public_id chahiye - cloudinary url ke last ka. extension chod ke.
     try {
         if(!localFilePath){
             throw new ApiError(400, "no old file to delete from cloudinary")

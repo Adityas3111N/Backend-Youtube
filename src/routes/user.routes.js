@@ -20,8 +20,8 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.route("/register").post(
-    upload.fields([
+router.route("/register").post(  //is path pe jate hi ye files locally store ho jayengi temp folder me public ke under. aur multer usi naam ka ek array with one object at 0th index return karega jisme ki file ka path aur details hongi.
+    upload.fields([//aur uploadOnCloudinary method me code likh diya hai jis se cloudinary pe upload krne ke baad local se delete kr de file.
         {
             name: "avatar",
             maxCount: 1
@@ -51,7 +51,10 @@ router.route("/update-account").patch(verifyJWT, updateAccountDetails)
 router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar) //post me sari details update ho jaengi isliye patch use kiya.
 router.route("/cover-image").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage) //upload.single isliye kyuki multer ka use krke update krne ke liye file keval ek bar upload krne ki permission denge.
 
-router.route("/c/:username").get(verifyJWT, getUserChannelProfile) //: is important. bcz we are taking username from params(url). before that write c or channel doesn't matter.
+router.route("/channel/:username").get(verifyJWT, getUserChannelProfile) //: is important. bcz we are taking username from params(url). before that write c or channel doesn't matter.
+//ways to give route in postman
+//{{server}}users/channel/eleven
+//
 router.route("/history").get(verifyJWT, getWatchHistory)
 
 
