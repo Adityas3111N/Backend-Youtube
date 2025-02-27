@@ -145,10 +145,6 @@ const deleteVideo = asyncHandler(async (req, res) => {
 const updateVideo = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { title, description } = req.body;
-    console.log(req.body)
-    console.log("Content-Type:", req.headers["content-type"]);
-console.log("Body:", req.body);
-console.log("Params:", req.params);
 
     try {
         const updatedVideo = await Video.findByIdAndUpdate(
@@ -177,10 +173,117 @@ console.log("Params:", req.params);
 });
 
 
+const likeAVideo = asyncHandler(async (req, res) => {//verify jwt phle hi ho rha hai bs isi wjh se current user ka access mil raha hai.
+    const {id} = req.params
+
+    const video = await Video.findById(id)
+
+    if(!video){
+        throw new ApiError(404, "video not found")
+    }
+
+    //user can like only if he is not already liked.
+    if(video.likes.users.includes(req.user._id)){
+        return res
+        .status(409)
+        .json(
+            new ApiResponse(
+                409,
+                null,
+                "user has already liked the video"
+            )
+        )
+    }
+
+    //if user already disliked, remove from dislikes.
+    if(video.dislikes.users.includes(req.user._id)){
+        video.dislikes.users = video.dislikes.users.filter(
+            (user) => user.toString() !== req.user._id.toString() //to covert into string while comparing mongo objects is a good practise. bcz mostly they are objectId type.
+        )
+        video.dislikes.count-=1
+    }//removed the current user from dislike array. if he disliked.
+
+    video.likes.users.push(req.user._id)
+    video.likes.count+=1
+
+    await video.save({validateBeforeSave : false})
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                currentlyLikedBy : req.user._id,
+                totalLikes: video.likes.count,
+                totalDislikes: video.dislikes.count
+
+            },
+            "User like updated successfully"
+        )
+    )
+})
+
+const dislikeAVideo = asyncHandler(async (req, res) => {//verify jwt phle hi ho rha hai bs isi wjh se current user ka access mil raha hai.
+    const {id} = req.params
+
+    const video = await Video.findById(id)
+
+    if(!video){
+        throw new ApiError(404, "video not found")
+    }
+
+    //user can like only if he is not already liked.
+    if(video.dislikes.users.includes(req.user._id)){
+        return res
+        .status(409)
+        .json(
+            new ApiResponse(
+                409,
+                null,
+                "user has already disliked the video"
+            )
+        )
+    }
+
+    //if user already liked, remove from likes.
+    if(video.likes.users.includes(req.user._id)){
+        video.likes.users = video.likes.users.filter(
+            (user) => user.toString() !== req.user._id.toString() //to covert into string while comparing mongo objects is a good practise. bcz mostly they are objectId type.
+        )
+        video.likes.count-=1
+    }//removed the current user from dislike array. if he disliked.
+
+    video.dislikes.users.push(req.user._id)
+    video.dislikes.count+=1
+
+    await video.save({validateBeforeSave : false})
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                currentlyDislikedBy : req.user._id,
+                totalLikes: video.likes.count,
+                totalDislikes: video.dislikes.count //bcz we have to update like and dislikes both on frontend each time user interact with both buttons.
+
+            },
+            "User dislike updated successfully"
+        )
+    )
+})
+
+
+
+
 export {
     uploadVideo,
     getAllVideos,
     getSingleVideo,
     deleteVideo,
-    updateVideo
+    updateVideo,
+    likeAVideo,
+    dislikeAVideo
 }

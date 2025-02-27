@@ -31,9 +31,24 @@ const videoSchema = new Schema (
         },
 
         likes: {
-            type: Number,
-            default: 0
+            count: { type: Number, default: 0 }, // Total number of likes
+            users: [
+                {
+                    type: mongoose.Types.ObjectId,
+                    ref: "User"
+                }
+            ]
         },
+        dislikes: {
+            count: { type: Number, default: 0 }, // Total number of dislikes
+            users: [
+                {
+                    type: mongoose.Types.ObjectId,
+                    ref: "User"
+                }
+            ]
+        },
+        
 
         isPublished: {
             type: Boolean,

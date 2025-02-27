@@ -5,7 +5,9 @@ import { uploadVideo,
          getAllVideos, 
          getSingleVideo,
          deleteVideo,
-         updateVideo
+         updateVideo,
+         likeAVideo,
+         dislikeAVideo
         } from "../controllers/video.controller.js";
 const router = Router();
 router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
@@ -29,5 +31,7 @@ router.route("").get(getAllVideos)
 router.route("/watch/:id").get(getSingleVideo)
 router.route("/delete-video/:id").post(deleteVideo)
 router.route("/update-video/:id").patch(updateVideo)
+router.route("/like-video/:id").patch(likeAVideo)
+router.route("/dislike-video/:id").patch(dislikeAVideo)
 
 export default router // ab is router ko kisi bhi naam se import kr skte hai.
