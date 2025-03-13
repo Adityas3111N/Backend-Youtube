@@ -46,4 +46,7 @@ app.use("/api/v1/users", userRouter)  //app.use ka use middlewares ke liye hota 
 import videoRouter from "./routes/video.routes.js"
 app.use("/api/v1/videos", videoRouter)
 
+import commentRouter from "./routes/comments.routes.js"
+app.use("/api/v1/comments", commentRouter)
+
 export {app}  //have to export powerful app to use express in different files.

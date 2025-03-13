@@ -29,8 +29,8 @@ router.route("/upload-video")
 
 router.route("").get(getAllVideos)
 router.route("/watch/:id").get(getSingleVideo)
-router.route("/delete-video/:id").post(deleteVideo)
-router.route("/update-video/:id").patch(updateVideo)
+router.route("/delete-video/:id").post(verifyJWT, deleteVideo)
+router.route("/update-video/:id").patch(verifyJWT, updateVideo)
 router.route("/like-video/:id").patch(likeAVideo)
 router.route("/dislike-video/:id").patch(dislikeAVideo)
 

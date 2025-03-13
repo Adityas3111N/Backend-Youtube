@@ -41,7 +41,8 @@ const uploadVideo = asyncHandler(async (req, res) => {
         thumbnail: thumbnail.url,
         title,
         description: description,
-        duration: 10
+        duration: 10,
+        owner: req.user._id
 
     })
 
@@ -120,10 +121,14 @@ const getSingleVideo = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler(async (req, res) => {
     
     const {id} = req.params
+    const video = await Video.findById(id)
 
+    if(String(video.owner )!== String(req.user._id)){
+        throw new ApiError(407, "user is not authorised to delete this video.")
+    }
     try {
+        
         const video = await Video.findByIdAndDelete(id)
-
         if(!video){
             throw new ApiError(401, "video not found")
         }

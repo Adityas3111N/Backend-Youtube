@@ -36,7 +36,7 @@ const generateAccessAndRefreshTokens = async (userId) => {//just enter userId an
 const registerUser = asyncHandler(
     //step 1 - get user details from frontend.
    async (req, res) => {
-    const {userName, email, fullName, password} = req.body
+    const {userName, email, fullName, password, isAdmin} = req.body
     
     //step 2 - validate user has given all the details and his email and username is unique.
     if([userName, fullName, email, password].some((field) => field?.trim() === "")){
@@ -83,7 +83,8 @@ const registerUser = asyncHandler(
         coverImage: coverImage?.url,
         email,
         password,
-        userName: userName.toLowerCase()
+        userName: userName.toLowerCase(),
+        isAdmin: isAdmin
     })
 
     //step 6 - check if user is creeated and if created then remove password and refreshToken fileds.
@@ -508,6 +509,7 @@ const getWatchHistory = asyncHandler(async(req, res) => {
         )
     )
 })
+
 
 export {
     registerUser,
