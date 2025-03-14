@@ -49,4 +49,7 @@ app.use("/api/v1/videos", videoRouter)
 import commentRouter from "./routes/comments.routes.js"
 app.use("/api/v1/comments", commentRouter)
 
+import subscriptionRouter from "./routes/subscription.routes.js"
+app.use("/api/v1/subscription", subscriptionRouter)
+
 export {app}  //have to export powerful app to use express in different files.
